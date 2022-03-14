@@ -5,12 +5,17 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 )
 
-func GetList(limit int, search string, offset int, ctx context.Context) []app.Person {
+type PersonRepository struct {
+}
+
+func NewUrlRepository() *PersonRepository {
+	return &PersonRepository{}
+}
+func (*PersonRepository) GetList(limit int, search string, offset int, ctx context.Context) (error, []app.Person) {
 	db := ctx.Value("Postgres-client").(*sql.DB)
-	query := "select * from postgres"
+	query := "select * from Person"
 	if search != "" {
 		query += " where \"Email\" = '" + fmt.Sprint(search) + "'"
 	}
@@ -22,7 +27,7 @@ func GetList(limit int, search string, offset int, ctx context.Context) []app.Pe
 	}
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return err, []app.Person{}
 	}
 	defer rows.Close()
 	Persons := []app.Person{}
@@ -30,7 +35,7 @@ func GetList(limit int, search string, offset int, ctx context.Context) []app.Pe
 		p := app.Person{}
 		err := rows.Scan(&p.Id, &p.Email, &p.Phone, &p.FirstName, &p.LastName)
 		if err != nil {
-			fmt.Println(err)
+			return err, []app.Person{}
 			continue
 		}
 		Persons = append(Persons, p)
@@ -39,15 +44,14 @@ func GetList(limit int, search string, offset int, ctx context.Context) []app.Pe
 		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
 	}
 	defer rows.Close()
-	defer db.Close()
-	return Persons
+	return nil, Persons
 }
-func GetPerson(GetId int, ctx context.Context) []app.Person {
+func (*PersonRepository) GetPerson(GetId int, ctx context.Context) (error, []app.Person) {
 	db := ctx.Value("Postgres-client").(*sql.DB)
 	query := "select * from Person where \"Id\" = '" + fmt.Sprint(GetId) + "'"
 	rows, err := db.Query(query)
 	if err != nil {
-		panic(err)
+		return err, []app.Person{}
 	}
 	defer rows.Close()
 	Persons := []app.Person{}
@@ -55,7 +59,7 @@ func GetPerson(GetId int, ctx context.Context) []app.Person {
 		p := app.Person{}
 		err := rows.Scan(&p.Id, &p.Email, &p.Phone, &p.FirstName, &p.LastName)
 		if err != nil {
-			fmt.Println(err)
+			return err, []app.Person{}
 			continue
 		}
 		Persons = append(Persons, p)
@@ -64,52 +68,46 @@ func GetPerson(GetId int, ctx context.Context) []app.Person {
 		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
 	}
 	defer rows.Close()
-	defer db.Close()
-	return Persons
+	return nil, Persons
 }
-func AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) []app.Person {
+func (*PersonRepository) AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
 	db := ctx.Value("Postgres-client").(*sql.DB)
 	Persons := []app.Person{}
 	result, err := db.Exec("insert into Person (\"Id\", \"Email\", \"Phone\", \"FirstName\", \"LastName\") values ($1,$2,$3,$4,$5)",
 		Id, Email, Phone, FirstName, LastName)
 	if err != nil {
-		panic(err)
+		return err, []app.Person{}
 	}
 	fmt.Println(result.LastInsertId())
 	fmt.Println(result.RowsAffected())
-	defer db.Close()
-
-	return Persons
+	return nil, Persons
 }
-func DeletePerson(GetId int, ctx context.Context) []app.Person {
+func (*PersonRepository) DeletePerson(GetId int, ctx context.Context) (error, []app.Person) {
 	db := ctx.Value("Postgres-client").(*sql.DB)
 	query := "delete from Person where \"Id\" = '" + fmt.Sprint(GetId) + "'"
 	result, err := db.Exec(query)
 	if err != nil {
-		panic(err)
+		return err, []app.Person{}
 	}
 	Persons := []app.Person{}
 	for _, p := range Persons {
 		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
 	}
 	fmt.Println(result.RowsAffected())
-	defer db.Close()
-
-	return Persons
+	return nil, Persons
 }
-func UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) []app.Person {
+func (*PersonRepository) UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
 	db := ctx.Value("Postgres-client").(*sql.DB)
 	query := "update Person set \"Email\"= '" + fmt.Sprint(Email) + "'," + " \"Phone\"= '" + fmt.Sprint(Phone) + "'," + " \"FirstName\"= '" +
 		fmt.Sprint(FirstName) + "'," + " \"LastName\"  = '" + fmt.Sprint(LastName) + "'" + " where \"Id\" = '" + fmt.Sprint(GetId) + "'"
 	result, err := db.Exec(query)
 	if err != nil {
-		panic(err)
+		return err, []app.Person{}
 	}
 	Persons := []app.Person{}
 	for _, p := range Persons {
 		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
 	}
 	fmt.Println(result.RowsAffected())
-	defer db.Close()
-	return Persons
+	return nil, Persons
 }

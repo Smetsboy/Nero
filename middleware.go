@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"github.com/gocraft/dbr/v2"
 	"github.com/labstack/echo/v4"
 )
 
-func DBServerPostGres(db *sql.DB) echo.MiddlewareFunc {
+func DBServerPostGres(db *dbr.Session) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			req := c.Request()

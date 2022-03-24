@@ -3,11 +3,11 @@ package app
 import "context"
 
 type Person struct {
-	Id        int
-	Email     string
-	Phone     string
-	FirstName string
-	LastName  string
+	Id        int    `db:"Id"`
+	Email     string `db:"Email"`
+	Phone     string `db:"Phone"`
+	FirstName string `db:"FirstName"`
+	LastName  string `db:"LastName"`
 }
 type PersonLogic interface {
 	GetList(limit int, search string, offset int, ctx context.Context) (error, []Person)

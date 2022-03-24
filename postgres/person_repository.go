@@ -3,8 +3,8 @@ package PostBD
 import (
 	"PeopleService/app"
 	"context"
-	"database/sql"
 	"fmt"
+	"github.com/gocraft/dbr/v2"
 )
 
 type PersonRepository struct {
@@ -13,101 +13,35 @@ type PersonRepository struct {
 func NewUrlRepository() *PersonRepository {
 	return &PersonRepository{}
 }
-func (*PersonRepository) GetList(limit int, search string, offset int, ctx context.Context) (error, []app.Person) {
-	db := ctx.Value("Postgres-client").(*sql.DB)
-	query := "select * from Person"
-	if search != "" {
-		query += " where \"Email\" = '" + fmt.Sprint(search) + "'"
-	}
-	if offset != 0 {
-		query += " offset " + fmt.Sprint(offset)
-	}
-	if limit != 0 {
-		query += " limit " + fmt.Sprint(limit)
-	}
-	rows, err := db.Query(query)
-	if err != nil {
-		return err, []app.Person{}
-	}
-	defer rows.Close()
-	Persons := []app.Person{}
-	for rows.Next() {
-		p := app.Person{}
-		err := rows.Scan(&p.Id, &p.Email, &p.Phone, &p.FirstName, &p.LastName)
-		if err != nil {
-			return err, []app.Person{}
-			continue
-		}
-		Persons = append(Persons, p)
-	}
-	for _, p := range Persons {
-		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
-	}
-	defer rows.Close()
-	return nil, Persons
+func (*PersonRepository) GetList(limit int, search string, offset int, ctx context.Context) (err error, person []app.Person) {
+	db := ctx.Value("Postgres-client").(*dbr.Session)
+	db.Select("*").From("Person").Load(&person)
+	db.Select("*").From("Person").Where("Email = '" + fmt.Sprint(search) + "'").
+		Offset(uint64(offset)).Limit(uint64(limit)).LoadOne(&[]app.Person{})
+	return err, person
 }
-func (*PersonRepository) GetPerson(GetId int, ctx context.Context) (error, []app.Person) {
-	db := ctx.Value("Postgres-client").(*sql.DB)
-	query := "select * from Person where \"Id\" = '" + fmt.Sprint(GetId) + "'"
-	rows, err := db.Query(query)
-	if err != nil {
-		return err, []app.Person{}
-	}
-	defer rows.Close()
-	Persons := []app.Person{}
-	for rows.Next() {
-		p := app.Person{}
-		err := rows.Scan(&p.Id, &p.Email, &p.Phone, &p.FirstName, &p.LastName)
-		if err != nil {
-			return err, []app.Person{}
-			continue
-		}
-		Persons = append(Persons, p)
-	}
-	for _, p := range Persons {
-		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
-	}
-	defer rows.Close()
-	return nil, Persons
+func (*PersonRepository) GetPerson(GetId int, ctx context.Context) (err error, person []app.Person) {
+	db := ctx.Value("Postgres-client").(*dbr.Session)
+	db.Select("*").From("Person\\").Where("Id\\ = '" + fmt.Sprint(GetId) + "'").Load(&person)
+
+	return err, person
 }
-func (*PersonRepository) AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
-	db := ctx.Value("Postgres-client").(*sql.DB)
-	Persons := []app.Person{}
-	result, err := db.Exec("insert into Person (\"Id\", \"Email\", \"Phone\", \"FirstName\", \"LastName\") values ($1,$2,$3,$4,$5)",
-		Id, Email, Phone, FirstName, LastName)
-	if err != nil {
-		return err, []app.Person{}
-	}
-	fmt.Println(result.LastInsertId())
-	fmt.Println(result.RowsAffected())
-	return nil, Persons
+func (*PersonRepository) AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (err error, person []app.Person) {
+	db := ctx.Value("Postgres-client").(*dbr.Session)
+	db.InsertInto("Person").Columns("Id").
+		Record(&Id).Columns("Email\\").Record(&Email).Columns("Phone\\").Record(&Phone).Columns("FirstName\\").
+		Record(FirstName).Columns("LastName\\").Record(LastName).
+		Exec()
+	return err, person
 }
-func (*PersonRepository) DeletePerson(GetId int, ctx context.Context) (error, []app.Person) {
-	db := ctx.Value("Postgres-client").(*sql.DB)
-	query := "delete from Person where \"Id\" = '" + fmt.Sprint(GetId) + "'"
-	result, err := db.Exec(query)
-	if err != nil {
-		return err, []app.Person{}
-	}
-	Persons := []app.Person{}
-	for _, p := range Persons {
-		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
-	}
-	fmt.Println(result.RowsAffected())
-	return nil, Persons
+func (*PersonRepository) DeletePerson(GetId int, ctx context.Context) (err error, person []app.Person) {
+	db := ctx.Value("Postgres-client").(*dbr.Session)
+	db.DeleteFrom("Person").Where("Id\\ = '" + fmt.Sprint(GetId) + "'").Exec()
+	return err, person
 }
-func (*PersonRepository) UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
-	db := ctx.Value("Postgres-client").(*sql.DB)
-	query := "update Person set \"Email\"= '" + fmt.Sprint(Email) + "'," + " \"Phone\"= '" + fmt.Sprint(Phone) + "'," + " \"FirstName\"= '" +
-		fmt.Sprint(FirstName) + "'," + " \"LastName\"  = '" + fmt.Sprint(LastName) + "'" + " where \"Id\" = '" + fmt.Sprint(GetId) + "'"
-	result, err := db.Exec(query)
-	if err != nil {
-		return err, []app.Person{}
-	}
-	Persons := []app.Person{}
-	for _, p := range Persons {
-		fmt.Println(p.Id, p.Email, p.Phone, p.FirstName, p.LastName)
-	}
-	fmt.Println(result.RowsAffected())
-	return nil, Persons
+func (*PersonRepository) UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (err error, person []app.Person) {
+	db := ctx.Value("Postgres-client").(*dbr.Session)
+	db.Update("Person\\").Set("Email\\", Email).Set("Phone\\", Phone).Set("FirstName\\", FirstName).
+		Set("#{\"LastName\"}", LastName).Exec()
+	return err, person
 }

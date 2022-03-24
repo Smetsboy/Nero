@@ -22,26 +22,26 @@ func (*PersonRepository) GetList(limit int, search string, offset int, ctx conte
 }
 func (*PersonRepository) GetPerson(GetId int, ctx context.Context) (err error, person []app.Person) {
 	db := ctx.Value("Postgres-client").(*dbr.Session)
-	db.Select("*").From("Person\\").Where("Id\\ = '" + fmt.Sprint(GetId) + "'").Load(&person)
+	db.Select("*").From("Person").Where("Id = '" + fmt.Sprint(GetId) + "'").Load(&person)
 
 	return err, person
 }
 func (*PersonRepository) AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (err error, person []app.Person) {
 	db := ctx.Value("Postgres-client").(*dbr.Session)
 	db.InsertInto("Person").Columns("Id").
-		Record(&Id).Columns("Email\\").Record(&Email).Columns("Phone\\").Record(&Phone).Columns("FirstName\\").
-		Record(FirstName).Columns("LastName\\").Record(LastName).
+		Record(&Id).Columns("Email").Record(&Email).Columns("Phone").Record(&Phone).Columns("FirstName").
+		Record(FirstName).Columns("LastName").Record(LastName).
 		Exec()
 	return err, person
 }
 func (*PersonRepository) DeletePerson(GetId int, ctx context.Context) (err error, person []app.Person) {
 	db := ctx.Value("Postgres-client").(*dbr.Session)
-	db.DeleteFrom("Person").Where("Id\\ = '" + fmt.Sprint(GetId) + "'").Exec()
+	db.DeleteFrom("Person").Where("Id = '" + fmt.Sprint(GetId) + "'").Exec()
 	return err, person
 }
 func (*PersonRepository) UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (err error, person []app.Person) {
 	db := ctx.Value("Postgres-client").(*dbr.Session)
-	db.Update("Person\\").Set("Email\\", Email).Set("Phone\\", Phone).Set("FirstName\\", FirstName).
-		Set("#{\"LastName\"}", LastName).Exec()
+	db.Update("Person").Set("Email", Email).Set("Phone", Phone).Set("FirstName", FirstName).
+		Set("LastName", LastName).Exec()
 	return err, person
 }

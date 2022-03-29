@@ -8,16 +8,16 @@ import (
 )
 
 type httpHandlers struct {
-	person_logic app.PersonLogic
+	person_logic app.Logic
 }
 
-func NewHttpHandlers(e *echo.Echo, person_logic app.PersonLogic) {
+func NewHttpHandlers(e *echo.Echo, person_logic app.Logic) {
 	h := httpHandlers{person_logic: person_logic}
 	e.GET("/", h.GetList)
-	e.GET("/Person/:Id", h.GetPerson)
-	e.POST("/Person", h.AddPerson)
-	e.DELETE("/Delete/:Id", h.DeletePerson)
-	e.PUT("/Update/:Id", h.UpdatePerson)
+	e.GET("/Person/:Id", h.Get)
+	e.POST("/Person", h.Add)
+	e.DELETE("/Delete/:Id", h.Delete)
+	e.PUT("/Update/:Id", h.Update)
 }
 func (h *httpHandlers) GetList(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -43,63 +43,55 @@ func (h *httpHandlers) GetList(c echo.Context) error {
 		}
 		offsetint = offsetint1
 	}
-	err, result := h.person_logic.GetList(limitint, searchstring, offsetint, ctx)
+	result, err := h.person_logic.GetList(ctx, limitint, searchstring, offsetint)
 	if err != nil {
 		c.JSON(505, err)
 	}
 	return c.JSON(http.StatusOK, result)
 }
-func (h *httpHandlers) GetPerson(c echo.Context) error {
+func (h *httpHandlers) Get(c echo.Context) error {
 	ctx := c.Request().Context()
 	id, err := strconv.Atoi(c.Param("Id"))
 	if err != nil {
 		c.JSON(505, err)
 	}
-	err, result := h.person_logic.GetPerson(id, ctx)
+	result, err := h.person_logic.Get(ctx, id)
 	if err != nil {
 		c.JSON(505, err)
 	}
 	return c.JSON(http.StatusOK, result)
 }
-func (h *httpHandlers) AddPerson(c echo.Context) error {
+func (h *httpHandlers) Add(c echo.Context) error {
 	ctx := c.Request().Context()
-	Email := c.FormValue("Email")
-	Phone := c.FormValue("Phone")
-	FirstName := c.FormValue("FirstName")
-	LastName := c.FormValue("LastName")
-	id, err := strconv.Atoi(c.FormValue("Id"))
-	if err != nil {
-		c.JSON(505, err)
-	}
-	err, result := h.person_logic.AddPerson(id, Email, Phone, FirstName, LastName, ctx)
+	person := app.Person{Email: c.FormValue("Email"), Phone: c.FormValue("Phone"), FirstName: c.FormValue("FirstName"),
+		LastName: c.FormValue("LastName")}
+	result, err := h.person_logic.Add(ctx, person)
 	if err != nil {
 		c.JSON(505, err)
 	}
 	return c.JSON(http.StatusOK, result)
 }
-func (h *httpHandlers) DeletePerson(c echo.Context) error {
+func (h *httpHandlers) Delete(c echo.Context) error {
 	ctx := c.Request().Context()
 	id, err := strconv.Atoi(c.Param("Id"))
 	if err != nil {
 		c.JSON(505, err)
 	}
-	err, result := h.person_logic.DeletePerson(id, ctx)
+	err = h.person_logic.Delete(ctx, id)
 	if err != nil {
 		c.JSON(505, err)
 	}
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(http.StatusOK, "Удалено")
 }
-func (h *httpHandlers) UpdatePerson(c echo.Context) error {
+func (h *httpHandlers) Update(c echo.Context) error {
 	ctx := c.Request().Context()
-	Email := c.FormValue("Email")
-	Phone := c.FormValue("Phone")
-	FirstName := c.FormValue("FirstName")
-	LastName := c.FormValue("LastName")
 	id, err := strconv.Atoi(c.Param("Id"))
 	if err != nil {
 		c.JSON(505, err)
 	}
-	err, result := h.person_logic.UpdatePerson(id, Email, Phone, FirstName, LastName, ctx)
+	person := app.Person{Id: id, Email: c.FormValue("Email"), Phone: c.FormValue("Phone"), FirstName: c.FormValue("FirstName"),
+		LastName: c.FormValue("LastName")}
+	result, err := h.person_logic.Update(ctx, person)
 	if err != nil {
 		c.JSON(505, err)
 	}

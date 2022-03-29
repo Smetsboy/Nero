@@ -5,25 +5,25 @@ import (
 	"context"
 )
 
-type PersonLogic struct {
-	repository app.PersonRepository
+type Logic struct {
+	repository app.Repository
 }
 
-func NewPersonLogic(repository app.PersonRepository) *PersonLogic {
-	return &PersonLogic{repository: repository}
+func NewLogic(repository app.Repository) *Logic {
+	return &Logic{repository: repository}
 }
-func (u *PersonLogic) GetList(limit int, search string, offset int, ctx context.Context) (error, []app.Person) {
-	return u.repository.GetList(limit, search, offset, ctx)
+func (u *Logic) GetList(ctx context.Context, limit int, search string, offset int) ([]app.Person, error) {
+	return u.repository.GetList(ctx, limit, search, offset)
 }
-func (u *PersonLogic) GetPerson(GetId int, ctx context.Context) (error, []app.Person) {
-	return u.repository.GetPerson(GetId, ctx)
+func (u *Logic) Get(ctx context.Context, GetId int) (app.Person, error) {
+	return u.repository.Get(ctx, GetId)
 }
-func (u *PersonLogic) AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
-	return u.repository.AddPerson(Id, Email, Phone, FirstName, LastName, ctx)
+func (u *Logic) Add(ctx context.Context, p app.Person) (app.Person, error) {
+	return u.repository.Add(ctx, p)
 }
-func (u *PersonLogic) DeletePerson(GetId int, ctx context.Context) (error, []app.Person) {
-	return u.repository.DeletePerson(GetId, ctx)
+func (u *Logic) Delete(ctx context.Context, GetId int) error {
+	return u.repository.Delete(ctx, GetId)
 }
-func (u *PersonLogic) UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []app.Person) {
-	return u.repository.UpdatePerson(GetId, Email, Phone, FirstName, LastName, ctx)
+func (u *Logic) Update(ctx context.Context, p app.Person) (app.Person, error) {
+	return u.repository.Update(ctx, p)
 }

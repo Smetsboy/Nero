@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func DBServerPostGres(db *dbr.Session) echo.MiddlewareFunc {
+func PostGresSession(db *dbr.Session) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			req := c.Request()

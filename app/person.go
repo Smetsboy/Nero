@@ -3,23 +3,23 @@ package app
 import "context"
 
 type Person struct {
-	Id        int    `db:"Id"`
-	Email     string `db:"Email"`
-	Phone     string `db:"Phone"`
-	FirstName string `db:"FirstName"`
-	LastName  string `db:"LastName"`
+	Id        int    `db:"id"`
+	Email     string `db:"email"`
+	Phone     string `db:"phone"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
 }
-type PersonLogic interface {
-	GetList(limit int, search string, offset int, ctx context.Context) (error, []Person)
-	GetPerson(GetId int, ctx context.Context) (error, []Person)
-	AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []Person)
-	DeletePerson(GetId int, ctx context.Context) (error, []Person)
-	UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []Person)
+type Logic interface {
+	GetList(context.Context, int, string, int) ([]Person, error)
+	Get(context.Context, int) (Person, error)
+	Add(context.Context, Person) (Person, error)
+	Delete(context.Context, int) error
+	Update(context.Context, Person) (Person, error)
 }
-type PersonRepository interface {
-	GetList(limit int, search string, offset int, ctx context.Context) (error, []Person)
-	GetPerson(GetId int, ctx context.Context) (error, []Person)
-	AddPerson(Id int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []Person)
-	DeletePerson(GetId int, ctx context.Context) (error, []Person)
-	UpdatePerson(GetId int, Email string, Phone string, FirstName string, LastName string, ctx context.Context) (error, []Person)
+type Repository interface {
+	GetList(context.Context, int, string, int) ([]Person, error)
+	Get(context.Context, int) (Person, error)
+	Add(context.Context, Person) (Person, error)
+	Delete(context.Context, int) error
+	Update(context.Context, Person) (Person, error)
 }
